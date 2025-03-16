@@ -1,20 +1,22 @@
 import pytest
 from playwright.sync_api import sync_playwright
 
+def pytest_addoption(parser):
+    """ Agrega la opción --browser en pytest """
+    parser.addoption("--browser", action="store", default="chromium", help="Selecciona el navegador: chromium, firefox o webkit")
+
 @pytest.fixture(scope="session")
-def playwright():
+def browser_type(pytestconfig):
+    """ Configura el navegador basado en la opción pasada en pytest """
+    browser_name = pytestconfig.getoption("browser")
+    
     with sync_playwright() as p:
-        yield p
-
-@pytest.fixture(scope="session")
-def browser(playwright):
-    browser = playwright.chromium.launch(headless=False)
-    yield browser
-    browser.close()
-
-@pytest.fixture(scope="function")
-def page(browser):
-    context = browser.new_context()
-    page = context.new_page()
-    yield page
-    page.close()
+        if browser_name == "firefox":
+            browser = p.firefox.launch(headless=True)
+        elif browser_name == "webkit":
+            browser = p.webkit.launch(headless=True)
+        else:
+            browser = p.chromium.launch(headless=True)
+        
+        yield browser
+        browser.close()
