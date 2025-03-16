@@ -40,6 +40,9 @@ jobs:
           source venv/bin/activate
           pytest --html=reports/report.html --self-contained-html -n auto || true
 
+      - name: Verificar si el reporte fue generado
+        run: ls -lah reports/
+
       - name: Cargar reporte de pruebas como artefacto
         uses: actions/upload-artifact@v3
         with:
