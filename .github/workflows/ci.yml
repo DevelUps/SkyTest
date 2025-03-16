@@ -46,3 +46,6 @@ jobs:
           name: test-report
           path: reports/report.html
 
+      - name: Enviar mensaje de éxito
+        if: always()
+        run: echo "Las pruebas se ejecutaron exitosamente"
