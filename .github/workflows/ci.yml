@@ -25,27 +25,30 @@ jobs:
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install playwright  # Asegurar que Playwright está instalado
-          playwright install --with-deps  # Instalar navegadores
+          pip install playwright
+          playwright install --with-deps
 
       - name: Crear carpeta de reportes
         run: mkdir -p reports
 
-      - name: Ejecutar pruebas
+      - name: Ejecutar pruebas en Chromium
         run: |
           source venv/bin/activate
-          pytest --html=reports/report.html --self-contained-html -n auto || true
+          pytest --browser=chromium --html=reports/report_chromium.html --self-contained-html || true
 
-      - name: Verificar si el reporte fue generado
-        run: ls -lah reports/ || echo "La carpeta reports/ está vacía"
+      - name: Ejecutar pruebas en Firefox
+        run: |
+          source venv/bin/activate
+          pytest --browser=firefox --html=reports/report_firefox.html --self-contained-html || true
 
-      - name: Subir reporte de pruebas como artefacto
+      - name: Ejecutar pruebas en WebKit
+        run: |
+          source venv/bin/activate
+          pytest --browser=webkit --html=reports/report_webkit.html --self-contained-html || true
+
+      - name: Subir reportes de pruebas como artefactos
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-report
-          path: reports/report.html
-
-      - name: Enviar mensaje de éxito
-        if: always()
-        run: echo "Las pruebas se ejecutaron exitosamente"
+          name: test-reports
+          path: reports/
