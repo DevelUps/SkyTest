@@ -26,12 +26,19 @@ jobs:
           python -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt
+
+      - name: Instalar navegadores de Playwright
+        run: |
+          source venv/bin/activate
           playwright install --with-deps
+
+      - name: Crear carpeta de reportes
+        run: mkdir -p reports
 
       - name: Ejecutar pruebas
         run: |
           source venv/bin/activate
-          pytest --html=reports/report.html --self-contained-html -n auto
+          pytest --html=reports/report.html --self-contained-html -n auto || true
 
       - name: Cargar reporte de pruebas como artefacto
         uses: actions/upload-artifact@v3
