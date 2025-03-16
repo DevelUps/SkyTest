@@ -14,6 +14,11 @@ jobs:
       - name: Clonar el repositorio
         uses: actions/checkout@v3
 
+      - name: Limpiar Caché de GitHub Actions
+        run: |
+          rm -rf ~/.npm ~/.cache
+          echo "Cache limpiada"
+
       - name: Configurar Python
         uses: actions/setup-python@v3
         with:
@@ -43,7 +48,7 @@ jobs:
 
       - name: Subir reporte de pruebas como artefacto
         if: success() || failure()  # Permite subirlo incluso si hay errores en pytest
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # Usamos la versión más reciente para evitar errores
         with:
           name: test-report
           path: reports/report.html
