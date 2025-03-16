@@ -2,11 +2,9 @@ name: SkyTest CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   test:
@@ -41,9 +39,10 @@ jobs:
           pytest --html=reports/report.html --self-contained-html -n auto || true
 
       - name: Verificar si el reporte fue generado
-        run: ls -lah reports/
+        run: ls -lah reports/ || echo "La carpeta reports/ está vacía"
 
-      - name: Cargar reporte de pruebas como artefacto
+      - name: Subir reporte de pruebas como artefacto
+        if: success() || failure()  # Permite subirlo incluso si hay errores en pytest
         uses: actions/upload-artifact@v3
         with:
           name: test-report
