@@ -14,11 +14,6 @@ jobs:
       - name: Clonar el repositorio
         uses: actions/checkout@v3
 
-      - name: Limpiar Caché de GitHub Actions
-        run: |
-          rm -rf ~/.npm ~/.cache
-          echo "Cache limpiada"
-
       - name: Configurar Python
         uses: actions/setup-python@v3
         with:
@@ -28,6 +23,7 @@ jobs:
         run: |
           python -m venv venv
           source venv/bin/activate
+          pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Instalar navegadores de Playwright
@@ -47,8 +43,8 @@ jobs:
         run: ls -lah reports/ || echo "La carpeta reports/ está vacía"
 
       - name: Subir reporte de pruebas como artefacto
-        if: success() || failure()  # Permite subirlo incluso si hay errores en pytest
-        uses: actions/upload-artifact@v4  # Usamos la versión más reciente para evitar errores
+        if: always()  # Permite subirlo incluso si las pruebas fallan
+        uses: actions/upload-artifact@v4  # Versión estable y sin errores de descarga
         with:
           name: test-report
           path: reports/report.html
