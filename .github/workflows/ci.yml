@@ -31,25 +31,43 @@ jobs:
       - name: Crear carpeta de reportes
         run: mkdir -p reports
 
+      - name: Verificar instalación de pytest y Playwright
+        run: |
+          source venv/bin/activate
+          pytest --version
+          playwright --version
+
       - name: Ejecutar pruebas en Chromium
         run: |
           source venv/bin/activate
-          pytest --browser=chromium --html=reports/report_chromium.html --self-contained-html || true
+          pytest tests/ui --browser=chromium --html=reports/report_chromium.html --self-contained-html || true
 
       - name: Ejecutar pruebas en Firefox
         run: |
           source venv/bin/activate
-          pytest --browser=firefox --html=reports/report_firefox.html --self-contained-html || true
+          pytest tests/ui --browser=firefox --html=reports/report_firefox.html --self-contained-html || true
 
       - name: Ejecutar pruebas en WebKit
         run: |
           source venv/bin/activate
-          pytest --browser=webkit --html=reports/report_webkit.html --self-contained-html || true
+          pytest tests/ui --browser=webkit --html=reports/report_webkit.html --self-contained-html || true
+
+      - name: Verificar carpeta de reportes antes de pruebas API
+        run: ls -lah reports/ || echo "⚠️ No existe la carpeta reports"
 
       - name: Ejecutar pruebas de API
         run: |
           source venv/bin/activate
-          pytest tests/api --html=reports/report_api.html --self-contained-html || echo "Falló la ejecución de pruebas API"
+          pytest tests/api --html=reports/report_api.html --self-contained-html || echo "⚠️ Falló la ejecución de pruebas API"
+
+      - name: Verificar si los reportes de UI fueron generados
+        run: |
+          if [ -f "reports/report_chromium.html" ] && [ -f "reports/report_firefox.html" ] && [ -f "reports/report_webkit.html" ]; then
+            echo "✅ Los reportes de UI se generaron correctamente"
+          else
+            echo "⚠️ No se generaron todos los reportes de UI"
+            exit 1
+          fi
 
       - name: Verificar si el reporte API fue generado
         run: |
@@ -57,7 +75,7 @@ jobs:
             echo "✅ El reporte API se generó correctamente"
           else
             echo "⚠️ No se generó el reporte API"
-            exit 0  # No fallar el pipeline si el reporte API no existe
+            exit 1
           fi
 
       - name: Subir reportes de UI como artefactos
@@ -66,7 +84,7 @@ jobs:
         with:
           name: test-reports-${{ github.run_id }}
           path: reports/
-          retention-days: 7
+          retention-days: 7  # Mantiene los artefactos durante 7 días
 
       - name: Subir reporte de pruebas de API
         if: always()
