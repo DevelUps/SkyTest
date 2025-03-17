@@ -7,8 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  ui-tests:
-    name: Pruebas UI en Playwright
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,18 +33,26 @@ jobs:
 
       - name: Ejecutar pruebas en Chromium
         run: |
-          python -m pytest tests --browser=chromium --html=reports/report_chromium.html --self-contained-html || true
+          source venv/bin/activate
+          pytest tests --browser=chromium --html=reports/report_chromium.html --self-contained-html || true
 
       - name: Ejecutar pruebas en Firefox
         run: |
-          python -m pytest tests --browser=firefox --html=reports/report_firefox.html --self-contained-html || true
+          source venv/bin/activate
+          pytest tests --browser=firefox --html=reports/report_firefox.html --self-contained-html || true
 
       - name: Ejecutar pruebas en WebKit
         run: |
-          python -m pytest tests --browser=webkit --html=reports/report_webkit.html --self-contained-html || true
+          source venv/bin/activate
+          pytest tests --browser=webkit --html=reports/report_webkit.html --self-contained-html || true
 
-      - name: Verificar reportes UI generados
-        run: ls -lah reports/ || echo "⚠️ No se generaron reportes UI"
+      - name: Ejecutar pruebas de API
+        run: |
+          source venv/bin/activate
+          pytest tests/api --html=reports/report_api.html --self-contained-html || true
+
+      - name: Verificar si los reportes se generaron
+        run: ls -lah reports/ || echo "⚠️ No se generaron reportes"
 
       - name: Subir reportes de UI como artefactos
         if: always()
@@ -55,45 +62,6 @@ jobs:
           path: reports/
           retention-days: 7
 
-  api-tests:
-    name: Pruebas de API con Playwright
-    runs-on: ubuntu-latest
-    needs: ui-tests  # Se ejecuta después de las pruebas UI
-
-    steps:
-      - name: Clonar el repositorio
-        uses: actions/checkout@v4
-
-      - name: Configurar Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: Instalar dependencias y Playwright
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install playwright pytest pytest-playwright pytest-html
-          playwright install --with-deps
-
-      - name: Crear carpeta de reportes
-        run: mkdir -p reports
-
-      - name: Ejecutar pruebas de API
-        run: |
-          python -m pytest tests/api --html=reports/report_api.html --self-contained-html || true
-
-      - name: Verificar si el reporte API fue generado
-        run: |
-          if [ -f "reports/report_api.html" ]; then
-            echo "✅ Reporte API generado correctamente"
-          else
-            echo "⚠️ No se generó el reporte API"
-            exit 1  # Opcional: Fallar si el reporte API no se generó
-          fi
-
       - name: Subir reporte de pruebas de API
         if: always()
         uses: actions/upload-artifact@v4
@@ -101,4 +69,4 @@ jobs:
           name: test-report-api-${{ github.run_id }}
           path: reports/report_api.html
           retention-days: 7
-          #prueba 
+
