@@ -1,13 +1,8 @@
 import pytest
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import Page
 
-@pytest.fixture(params=["chromium", "firefox", "webkit"])
-def browser_type(request):
-    return request.param
-
-@pytest.fixture
-def browser(browser_type):
-    with sync_playwright() as p:
-        browser = getattr(p, browser_type).launch()
-        yield browser
-        browser.close()
+@pytest.fixture(scope="function")
+def login_page(page: Page):
+    """ Devuelve una instancia de LoginPage usando el fixture `page` de Playwright """
+    from pages.login_page import LoginPage
+    return LoginPage(page)
