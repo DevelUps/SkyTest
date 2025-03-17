@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Clonar el repositorio
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Configurar Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
@@ -46,29 +46,21 @@ jobs:
           source venv/bin/activate
           pytest --browser=webkit --html=reports/report_webkit.html --self-contained-html || true
 
-      - name: Subir reportes de pruebas como artefactos
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-reports
-          path: reports/
-
       - name: Ejecutar pruebas de API
         run: |
-            source venv/bin/activate
-            pytest tests/api --html=reports/report_api.html --self-contained-html || true
-        
-      - name: Subir reportes de pruebas como artefactos
+          source venv/bin/activate
+          pytest tests/api --html=reports/report_api.html --self-contained-html || true
+
+      - name: Subir reportes de UI como artefactos
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports
+          name: test-reports-${{ github.run_id }}  # 🔥 Evita conflictos en CI/CD
           path: reports/
-        
+
       - name: Subir reporte de pruebas de API
         if: always()
         uses: actions/upload-artifact@v4
         with:
-            name: test-report-api
-            path: reports/report_api.html
-                 
+          name: test-report-api-${{ github.run_id }}
+          path: reports/report_api.html
