@@ -52,3 +52,23 @@ jobs:
         with:
           name: test-reports
           path: reports/
+
+      - name: Ejecutar pruebas de API
+        run: |
+            source venv/bin/activate
+            pytest tests/api --html=reports/report_api.html --self-contained-html || true
+        
+      - name: Subir reportes de pruebas como artefactos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: reports/
+        
+      - name: Subir reporte de pruebas de API
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+            name: test-report-api
+            path: reports/report_api.html
+                 
