@@ -46,10 +46,22 @@ jobs:
           source venv/bin/activate
           pytest --browser=webkit --html=reports/report_webkit.html --self-contained-html || true
 
+      - name: Verificar carpeta de reportes antes de pruebas API
+        run: ls -lah reports/ || echo "No existe la carpeta reports"
+
       - name: Ejecutar pruebas de API
         run: |
           source venv/bin/activate
           pytest tests/api --html=reports/report_api.html --self-contained-html || true
+
+      - name: Verificar si el reporte API fue generado
+        run: |
+          if [ -f "reports/report_api.html" ]; then
+            echo "El reporte API se generó correctamente"
+          else
+            echo "⚠️ No se generó el reporte API"
+            exit 1
+          fi
 
       - name: Subir reportes de UI como artefactos
         if: always()
